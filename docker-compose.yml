@@ -1,0 +1,23 @@
+version: '3.7'
+services:
+  activemq:
+    build: .
+    ports:
+      - "61616:61616"
+      - "8161:8161"
+    environment:
+      ACTIVEMQ_HOME: /opt/activemq
+      ACTIVEMQ_ADMIN_LOGIN: admin
+      ACTIVEMQ_ADMIN_PASSWORD: admin
+      ACTIVEMQ_USER_LOGIN: user
+      ACTIVEMQ_USER_PASSWORD: user
+      ACTIVEMQ_OPTS_MEMORY: "-Xms1G -Xmx4G"
+      JAVA_OPTS: "-Djava.awt.headless=true -Dhawtio.authenticationEnabled=true"
+      ACTIVEMQ_OPTS: "-Djetty.host=0.0.0.0 -Djetty.port=8161"
+    volumes:
+      - ./activemq-data:/opt/activemq/data
+      - ./config/activemq.xml:/opt/activemq/conf/activemq.xml
+      - ./jetty-realm.properties:/opt/activemq/conf/jetty-realm.properties
+      - ./login.config:/opt/activemq/conf/login.config
+      - ./users.properties:/opt/activemq/conf/users.properties
+      - ./groups.properties:/opt/activemq/conf/groups.properties

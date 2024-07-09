@@ -1,0 +1,122 @@
+<beans
+  xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
+
+  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
+
+    <bean id="jettyServer" class="org.eclipse.jetty.server.Server"
+        init-method="start" destroy-method="stop">
+    <property name="connectors">
+      <list>
+        <bean id="Connector" class="org.eclipse.jetty.server.ServerConnector">
+          <constructor-arg ref="jettyServer"/>
+          <property name="host" value="0.0.0.0"/>
+          <property name="port" value="8161"/>
+        </bean>
+      </list>
+    </property>
+    <property name="handler">
+      <bean id="handlers" class="org.eclipse.jetty.server.handler.HandlerCollection">
+        <property name="handlers">
+          <list>
+            <ref bean="secHandlerCollection"/>
+            <ref bean="securityHandler"/>
+          </list>
+        </property>
+      </bean>
+    </property>
+  </bean>
+
+  <bean id="jettyPort" class="org.apache.activemq.web.WebConsolePort" init-method="start">
+    <property name="host" value="0.0.0.0"/>
+    <property name="port" value="8161"/>
+  </bean>
+
+  <bean id="secHandlerCollection" class="org.eclipse.jetty.server.handler.HandlerCollection">
+    <property name="handlers">
+      <list>
+        <bean class="org.eclipse.jetty.webapp.WebAppContext">
+          <property name="contextPath" value="/hawtio"/>
+          <property name="war" value="${activemq.home}/webapps/hawtio.war"/>
+          <property name="logUrlOnStart" value="true"/>
+        </bean>
+      </list>
+    </property>
+  </bean>
+
+   <bean id="securityHandler" class="org.eclipse.jetty.security.ConstraintSecurityHandler">
+  <property name="loginService">
+    <bean class="org.eclipse.jetty.security.HashLoginService">
+      <property name="name" value="ActiveMQRealm" />
+      <property name="config" value="${activemq.conf}/jetty-realm.properties" />
+    </bean>
+  </property>
+  <property name="authenticator">
+    <bean class="org.eclipse.jetty.security.authentication.BasicAuthenticator"/>
+  </property>
+  <property name="constraintMappings">
+    <list>
+      <bean class="org.eclipse.jetty.security.ConstraintMapping">
+        <property name="constraint">
+          <bean class="org.eclipse.jetty.util.security.Constraint">
+            <property name="name" value="BASIC" />
+            <property name="roles" value="admins" />
+            <property name="authenticate" value="true" />
+          </bean>
+        </property>
+        <property name="pathSpec" value="/*"/>
+      </bean>
+    </list>
+  </property>
+</bean>
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <value>file:${activemq.conf}/credentials.properties</value>
+        </property>
+    </bean>
+
+    <bean id="memoryUsage" class="org.apache.activemq.usage.MemoryUsage">
+       <property name="limit" value="2048000000"/>
+    </bean>
+
+    <!-- Define Broker Service -->
+    <bean id="broker" class="org.apache.activemq.xbean.XBeanBrokerService">
+        <property name="brokerName" value="localhost"/>
+        <property name="dataDirectory" value="${activemq.data}"/>
+     <property name="plugins">
+        <list>
+           <bean class="org.apache.activemq.security.JaasAuthenticationPlugin">
+            <property name="configuration" value="ActiveMQRealm"/>
+          </bean>
+        </list>
+    </property>
+        <property name="systemUsage">
+            <bean class="org.apache.activemq.usage.SystemUsage">
+                <property name="memoryUsage" ref="memoryUsage"/>
+            </bean>
+        </property>
+       <property name="transportConnectors">
+        <list>
+            <bean class="org.apache.activemq.broker.TransportConnector">
+                <property name="name" value="openwire"/>
+                <property name="uri" value="tcp://0.0.0.0:61616?maximumConnections=1000&amp;wireFormat.maxFrameSize=2147483648"/>
+            </bean>
+            <bean class="org.apache.activemq.broker.TransportConnector">
+                <property name="name" value="stomp"/>
+                <property name="uri" value="stomp://0.0.0.0:61613?maximumConnections=1000&amp;wireFormat.maxFrameSize=2147483648"/>
+            </bean>
+           <bean class="org.apache.activemq.broker.TransportConnector">
+                <property name="name" value="mqtt"/>
+                <property name="uri" value="mqtt://0.0.0.0:1883?maximumConnections=1000&amp;wireFormat.maxFrameSize=524288"/>
+            </bean>
+            <bean class="org.apache.activemq.broker.TransportConnector">
+                <property name="name" value="ws"/>
+                <property name="uri" value="ws://0.0.0.0:61614?maximumConnections=1000&amp;wireFormat.maxFrameSize=2147483648"/>
+            </bean>
+        </list>
+        </property>
+    </bean>
+
+</beans>
