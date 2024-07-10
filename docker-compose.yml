@@ -1,4 +1,9 @@
 version: '3.7'
+
+networks:
+  app-network:
+    driver: bridge
+
 services:
   activemq:
     build: .
@@ -21,3 +26,23 @@ services:
       - ./login.config:/opt/activemq/conf/login.config
       - ./users.properties:/opt/activemq/conf/users.properties
       - ./groups.properties:/opt/activemq/conf/groups.properties
+    networks:
+      - app-network
+
+  spring-boot-app:
+    build:
+      context: ./spring-boot-app
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_ACTIVEMQ_BROKER_URL: tcp://activemq:61616
+      SPRING_ACTIVEMQ_USER: admin
+      SPRING_ACTIVEMQ_PASSWORD: admin
+    volumes:
+      - ./spring-boot-app:/app
+      - ~/.m2:/root/.m2
+    depends_on:
+      - activemq
+    networks:
+      - app-network
