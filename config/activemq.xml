@@ -85,6 +85,33 @@
     <bean id="broker" class="org.apache.activemq.xbean.XBeanBrokerService">
         <property name="brokerName" value="localhost"/>
         <property name="dataDirectory" value="${activemq.data}"/>
+        <property name="persistenceAdapter">
+          <bean class="org.apache.activemq.store.kahadb.KahaDBPersistenceAdapter">
+            <property name="directory" value="${activemq.data}/kahadb"/>
+          </bean>
+        </property>
+        <property name="destinationPolicy">
+            <bean class="org.apache.activemq.broker.region.policy.PolicyMap">
+                <property name="policyEntries">
+                    <list>
+                        <bean class="org.apache.activemq.broker.region.policy.PolicyEntry">
+                            <property name="topic" value=">" />
+                            <property name="subscriptionRecoveryPolicy">
+                                <bean class="org.apache.activemq.broker.region.policy.LastImageSubscriptionRecoveryPolicy"/>
+                            </property>
+                        </bean>
+                           <!-- การตั้งค่าสำหรับ Queue เพื่อเก็บข้อความที่ถูกรับแล้ว -->
+                        <!-- การตั้งค่าสำหรับ Queue -->
+                      <bean class="org.apache.activemq.broker.region.policy.PolicyEntry">
+                        <property name="queue" value=">" />
+                        <property name="enableAudit" value="true"/>
+                        <property name="maxAuditDepth" value="1000"/>
+                        <property name="maxProducersToAudit" value="100"/>
+                      </bean>
+                    </list>
+                </property>
+            </bean>
+        </property>
      <property name="plugins">
         <list>
            <bean class="org.apache.activemq.security.JaasAuthenticationPlugin">
