@@ -6,6 +6,11 @@
 
   <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
 
+   <!-- Define ActiveMQ.DLQ Destination -->
+  <bean id="ActiveMQ.DLQ" class="org.apache.activemq.command.ActiveMQQueue">
+    <constructor-arg value="ActiveMQ.DLQ"/>
+  </bean>
+
     <bean id="jettyServer" class="org.eclipse.jetty.server.Server"
         init-method="start" destroy-method="stop">
     <property name="connectors">
@@ -100,14 +105,18 @@
                                 <bean class="org.apache.activemq.broker.region.policy.LastImageSubscriptionRecoveryPolicy"/>
                             </property>
                         </bean>
-                           <!-- การตั้งค่าสำหรับ Queue เพื่อเก็บข้อความที่ถูกรับแล้ว -->
-                        <!-- การตั้งค่าสำหรับ Queue -->
-                      <bean class="org.apache.activemq.broker.region.policy.PolicyEntry">
-                        <property name="queue" value=">" />
-                        <property name="enableAudit" value="true"/>
-                        <property name="maxAuditDepth" value="1000"/>
-                        <property name="maxProducersToAudit" value="100"/>
-                      </bean>
+                         <!-- Adjusted policy entry for queues with correct dead letter queue reference -->
+                        <bean class="org.apache.activemq.broker.region.policy.PolicyEntry">
+                          <property name="queue" value=">"/>
+                          <property name="memoryLimit" value="104857600"/> <!-- Set memory limit to 100 MB -->
+                          <property name="deadLetterStrategy">
+                            <bean class="org.apache.activemq.broker.region.policy.SharedDeadLetterStrategy">
+                              <property name="deadLetterQueue">
+                                <ref bean="ActiveMQ.DLQ"/> <!-- Reference to a predefined ActiveMQDestination bean -->
+                              </property>
+                            </bean>
+                          </property>
+                        </bean>
                     </list>
                 </property>
             </bean>

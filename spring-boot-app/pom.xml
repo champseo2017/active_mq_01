@@ -40,6 +40,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
+         <!-- ActiveMQ Broker Dependency -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-broker</artifactId>
+            <version>5.17.1</version> <!-- Ensure the version is compatible with your project -->
+        </dependency>
         
         <!-- Spring Boot Starter Test for testing -->
         <dependency>

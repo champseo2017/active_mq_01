@@ -15,7 +15,7 @@ public class JmsMessageSender {
     private JmsTemplate jmsTemplate;
 
     public void sendMessage(String destination, String message) {
-        System.out.println("Attempting to send message: " + message + " to destination: " + destination);
+        System.out.println("Attempting to send message gg: " + message + " to destination: " + destination);
         try {
             // Option 1: Use a new Session for each send
             jmsTemplate.send(destination, session -> createTextMessage(session, message));
